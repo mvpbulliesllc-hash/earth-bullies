@@ -1,78 +1,50 @@
-import type { NextFetchEvent, NextRequest } from 'next/server';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import type { NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
+import { auth0 } from './lib/auth0';
 import { routing } from './libs/I18nRouting';
 
 const handleI18nRouting = createMiddleware(routing);
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/:locale/dashboard(.*)',
-  '/onboarding(.*)',
-  '/:locale/onboarding(.*)',
-]);
+/** Matches /dashboard and /:locale/dashboard (the admin area). */
+function isProtectedRoute(pathname: string) {
+  return /^\/(?:[a-z]{2}\/)?dashboard(?:\/|$)/.test(pathname);
+}
 
-const isAuthPage = createRouteMatcher([
-  '/sign-in(.*)',
-  '/:locale/sign-in(.*)',
-  '/sign-up(.*)',
-  '/:locale/sign-up(.*)',
-]);
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-// API routes (e.g. /api/admin/upload) must NOT go through i18n routing, which
-// would treat them as localized pages and 404 them. Run Clerk so `auth()` works
-// inside the route handlers, then let the route run as-is.
-const isApiRoute = createRouteMatcher(['/api/(.*)']);
-
-export default async function proxy(
-  request: NextRequest,
-  event: NextFetchEvent,
-) {
-  if (isApiRoute(request)) {
-    return clerkMiddleware()(request, event);
+  // Auth0 owns its own routes (/auth/login, /auth/logout, /auth/callback, …).
+  if (pathname.startsWith('/auth')) {
+    return auth0.middleware(request);
   }
 
-  // Clerk keyless mode doesn't work with i18n, this is why we need to run the middleware conditionally
-  if (
-    isAuthPage(request) || isProtectedRoute(request)
-  ) {
-    return clerkMiddleware(async (auth, req) => {
-      // Check if the current route is protected and requires authentication
-      // If user is not authenticated, redirect them to the sign-in page with proper locale
-      if (isProtectedRoute(req)) {
-        const locale = req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
+  // Run the Auth0 middleware so the session cookie is refreshed and getSession()
+  // works inside route handlers / server components.
+  const authRes = await auth0.middleware(request);
 
-        const signInUrl = new URL(`${locale}/sign-in`, req.url);
-
-        await auth.protect({
-          unauthenticatedUrl: signInUrl.toString(),
-        });
-      }
-
-      const authObj = await auth();
-
-      // Redirect authenticated users without an organization to the organization selection page
-      // This ensures users are properly associated with an organization before accessing the dashboard
-      if (
-        authObj.userId
-        && !authObj.orgId
-        && req.nextUrl.pathname.includes('/dashboard')
-        && !req.nextUrl.pathname.endsWith('/organization-selection')
-      ) {
-        const orgSelection = new URL(
-          '/onboarding/organization-selection',
-          req.url,
-        );
-
-        return NextResponse.redirect(orgSelection);
-      }
-
-      return handleI18nRouting(req);
-    })(request, event);
+  // API routes (e.g. /api/admin/upload) must NOT go through i18n routing, which
+  // would treat them as localized pages and 404 them.
+  if (pathname.startsWith('/api')) {
+    return authRes;
   }
 
-  return handleI18nRouting(request);
+  // Gate the admin dashboard — redirect anonymous visitors to Auth0 login.
+  if (isProtectedRoute(pathname)) {
+    const session = await auth0.getSession(request);
+    if (!session) {
+      const loginUrl = new URL('/auth/login', request.nextUrl.origin);
+      loginUrl.searchParams.set('returnTo', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // i18n routing for everything else; carry over any cookies Auth0 set.
+  const intlRes = handleI18nRouting(request);
+  for (const cookie of authRes.cookies.getAll()) {
+    intlRes.cookies.set(cookie);
+  }
+  return intlRes;
 }
 
 export const config = {

@@ -1,6 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { auth0 } from '@/lib/auth0';
 
 /**
  * A Vercel Blob read-write token looks like `vercel_blob_rw_<storeId>_<secret>`.
@@ -47,8 +47,8 @@ function resolvePublicBlobToken(): string | undefined {
  * public Vercel Blob store. Requires a Blob store connected to the environment.
  */
 export async function POST(request: Request): Promise<NextResponse> {
-  const { userId } = await auth();
-  if (!userId) {
+  const session = await auth0.getSession();
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

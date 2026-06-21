@@ -1,15 +1,11 @@
-import { UserButton } from '@clerk/nextjs';
-import { useLocale } from 'next-intl';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { ActiveLink } from '@/components/ActiveLink';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 
 import { Separator } from '@/components/ui/separator';
 import { Logo } from '@/templates/Logo';
-import { getI18nPath } from '@/utils/Helpers';
 import { MobileNavigation } from './MobileNavigation';
-import { OrganizationMenu } from './OrganizationMenu';
-import { SlashIcon } from './SlashIcon';
 
 export const DashboardHeader = (props: {
   menu: {
@@ -17,18 +13,12 @@ export const DashboardHeader = (props: {
     label: string;
   }[];
 }) => {
-  const locale = useLocale();
-
   return (
     <>
       <div className="flex items-center">
         <Link href="/dashboard" className="max-sm:hidden">
           <Logo />
         </Link>
-
-        <SlashIcon />
-
-        <OrganizationMenu />
 
         <nav className="
           ml-3
@@ -65,16 +55,19 @@ export const DashboardHeader = (props: {
           </li>
 
           <li>
-            <UserButton
-              userProfileMode="navigation"
-              userProfileUrl={getI18nPath('/dashboard/user-profile', locale)}
-              afterSwitchSessionUrl="/dashboard"
-              appearance={{
-                elements: {
-                  rootBox: 'px-2 py-1.5',
-                },
-              }}
-            />
+            {/* Auth0 logout — served by middleware, needs a full navigation (not next/link). */}
+            {/* eslint-disable-next-line next/no-html-link-for-pages */}
+            <a
+              href="/auth/logout"
+              className="
+                flex items-center gap-x-1.5 px-2 py-1.5 text-sm font-medium
+                opacity-75
+                hover:opacity-100
+              "
+            >
+              <LogOut className="size-4" />
+              <span className="max-sm:hidden">Sign out</span>
+            </a>
           </li>
         </ul>
       </div>

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/features/dashboard/DashboardHeader';
+import { auth0 } from '@/lib/auth0';
 
 type DashboardLayoutProps = {
   params: Promise<{ locale: string }>;
@@ -15,6 +17,13 @@ export const metadata: Metadata = {
 export default async function DashboardLayout(props: DashboardLayoutProps) {
   const { locale } = await props.params;
   setRequestLocale(locale);
+
+  // Defense in depth — the middleware already gates /dashboard, but guard the
+  // server render too so the admin is never shown without an Auth0 session.
+  const session = await auth0.getSession();
+  if (!session) {
+    redirect('/auth/login');
+  }
 
   return (
     <>

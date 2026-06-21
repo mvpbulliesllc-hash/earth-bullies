@@ -6,11 +6,9 @@ const config: KnipConfig = {
     'checkly.config.ts',
     'src/components/ui/*',
     'src/libs/I18n.ts',
-    'src/types/Auth.ts',
   ],
   // Dependencies to ignore during analysis
   ignoreDependencies: [
-    '@clerk/shared',
     '@swc/helpers', // Avoid error in CI: "`npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync."
     '@radix-ui/react-accordion', // Used by the ignored UI primitive src/components/ui/accordion.tsx
     '@radix-ui/react-icons', // Retained shadcn/ui peer dependency

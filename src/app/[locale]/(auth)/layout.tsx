@@ -1,29 +1,11 @@
-import { ClerkProvider } from '@clerk/nextjs';
-import { shadcn } from '@clerk/ui/themes';
-import { ClerkLocalizations } from '@/utils/AppConfig';
-
-export default async function AuthLayout(props: {
+/**
+ * Auth route group layout. Authentication is handled by Auth0 (see src/proxy.ts
+ * and src/lib/auth0.ts) — there is no provider to wrap here, so we just render
+ * the protected children.
+ */
+export default function AuthLayout(props: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await props.params;
-
-  const clerkLocale = ClerkLocalizations.supportedLocales[locale] ?? ClerkLocalizations.defaultLocale;
-
-  return (
-    <ClerkProvider
-      appearance={{
-        cssLayerName: 'clerk', // Ensure Clerk is compatible with Tailwind CSS v4
-        theme: shadcn,
-      }}
-      localization={clerkLocale}
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/dashboard"
-      afterSignOutUrl="/"
-    >
-      {props.children}
-    </ClerkProvider>
-  );
+  return props.children;
 }

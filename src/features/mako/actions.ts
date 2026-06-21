@@ -1,18 +1,18 @@
 'use server';
 
 import type { LitterPick } from '@/models/Schema';
-import { auth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { auth0 } from '@/lib/auth0';
 import { db } from '@/libs/DB';
 import { dogsSchema, gallerySchema, leadsSchema, littersSchema, puppiesSchema, settingsSchema } from '@/models/Schema';
 import { SETTINGS_FIELDS } from './settings';
 import { slugify } from './types';
 
 async function requireAuth() {
-  const { userId } = await auth();
-  if (!userId) {
+  const session = await auth0.getSession();
+  if (!session) {
     throw new Error('Unauthorized');
   }
 }
