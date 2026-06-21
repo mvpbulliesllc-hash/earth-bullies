@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 import { demoDogs, demoGallery, demoLitters, demoPuppies } from '../src/features/mako/demoContent';
 import { settingDefaults } from '../src/features/mako/settings';
 import * as schema from '../src/models/Schema';
-import { normalizeDbUrl } from '../src/utils/dbUrl';
+import { dbSsl, normalizeDbUrl } from '../src/utils/dbUrl';
 
 /**
  * Seed / refresh the live database with the current site content (dogs,
@@ -27,7 +27,7 @@ async function main() {
     return;
   }
 
-  const pool = new Pool({ connectionString: url, connectionTimeoutMillis: 10000 });
+  const pool = new Pool({ connectionString: url, ssl: dbSsl(process.env.DATABASE_URL), connectionTimeoutMillis: 10000 });
   const db = drizzle(pool, { schema });
 
   try {
