@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import { demoDogs, demoGallery, demoLitters, demoPuppies } from '../src/features/mako/demoContent';
 import { settingDefaults } from '../src/features/mako/settings';
 import * as schema from '../src/models/Schema';
+import { normalizeDbUrl } from '../src/utils/dbUrl';
 
 /**
  * Seed / refresh the live database with the current site content (dogs,
@@ -20,7 +21,7 @@ import * as schema from '../src/models/Schema';
 const SEED_VERSION = 'earth-2026-06-21.1';
 
 async function main() {
-  const url = process.env.DATABASE_URL;
+  const url = normalizeDbUrl(process.env.DATABASE_URL);
   if (!url) {
     console.warn('seed: DATABASE_URL not set — skipping seed.');
     return;
