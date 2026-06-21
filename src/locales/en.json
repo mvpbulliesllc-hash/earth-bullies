@@ -1,0 +1,28 @@
+{
+  "LocaleSwitcher": {
+    "button_label": "Change language"
+  },
+  "Footer": {
+    "footer_text": "© {year} {name}. Made with <author></author>."
+  },
+  "SignIn": {
+    "meta_title": "Sign in",
+    "meta_description": "Seamlessly sign in to your account with our user-friendly login process."
+  },
+  "SignUp": {
+    "meta_title": "Sign up",
+    "meta_description": "Effortlessly create an account through our intuitive sign-up process."
+  },
+  "DashboardLayout": {
+    "meta_title": "Earth Bullies Dashboard",
+    "meta_description": "Manage dogs, litters, puppies, photos and inquiries for Earth Bullies."
+  },
+  "UserProfilePage": {
+    "title_bar": "User Profile",
+    "title_bar_description": "View and manage your user profile"
+  },
+  "OrganizationProfilePage": {
+    "title_bar": "Organization Management",
+    "title_bar_description": "Manage your organization"
+  }
+}
