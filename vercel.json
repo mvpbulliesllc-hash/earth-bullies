@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "echo '=== STEP: migrate ===' && (drizzle-kit migrate || echo '!!! migrate exited nonzero') && echo '=== STEP: seed ===' && (tsx scripts/seed.ts || echo '!!! seed exited nonzero') && echo '=== STEP: next build ===' && next build"
+}

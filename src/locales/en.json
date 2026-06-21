@@ -1,0 +1,8 @@
+{
+  "LocaleSwitcher": {
+    "button_label": "Change language"
+  },
+  "Footer": {
+    "footer_text": "© {year} {name}. Made with <author></author>."
+  }
+}
